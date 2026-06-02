@@ -1,38 +1,41 @@
 const path = require('path')
-const sqlite3 = require('sqlite3').verbose()
+const Database = require('better-sqlite3')
 
 const dbPath = path.join(__dirname, 'fishbiz.db')
-const db = new sqlite3.Database(dbPath)
+const db = new Database(dbPath)
 
 function run(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function onRun(err) {
-      if (err) return reject(err)
-      resolve(this)
-    })
-  })
+  try {
+    const stmt = db.prepare(sql)
+    const result = stmt.run(params)
+    return Promise.resolve({ lastID: result.lastInsertRowid, changes: result.changes })
+  } catch (err) {
+    return Promise.reject(err)
+  }
 }
 
 function get(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) return reject(err)
-      resolve(row)
-    })
-  })
+  try {
+    const stmt = db.prepare(sql)
+    const row = stmt.get(params)
+    return Promise.resolve(row)
+  } catch (err) {
+    return Promise.reject(err)
+  }
 }
 
 function all(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) return reject(err)
-      resolve(rows)
-    })
-  })
+  try {
+    const stmt = db.prepare(sql)
+    const rows = stmt.all(params)
+    return Promise.resolve(rows)
+  } catch (err) {
+    return Promise.reject(err)
+  }
 }
 
 async function initDatabase() {
-  await run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT UNIQUE NOT NULL,
@@ -41,7 +44,7 @@ async function initDatabase() {
     )
   `)
 
-  await run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS fish_products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -56,15 +59,10 @@ async function initDatabase() {
     )
   `)
 
-  // Migrations for existing database
-  try {
-    await run('ALTER TABLE fish_products ADD COLUMN additional_images TEXT')
-  } catch (e) {}
-  try {
-    await run('ALTER TABLE fish_products ADD COLUMN is_featured INTEGER DEFAULT 0')
-  } catch (e) {}
+  try { db.exec('ALTER TABLE fish_products ADD COLUMN additional_images TEXT') } catch (e) {}
+  try { db.exec('ALTER TABLE fish_products ADD COLUMN is_featured INTEGER DEFAULT 0') } catch (e) {}
 
-  await run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS inquiries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       buyer_name TEXT NOT NULL,
@@ -77,14 +75,14 @@ async function initDatabase() {
     )
   `)
 
-  await run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT
     )
   `)
 
-  await run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS gallery (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       image_url TEXT NOT NULL,
@@ -95,10 +93,4 @@ async function initDatabase() {
   `)
 }
 
-module.exports = {
-  db,
-  run,
-  get,
-  all,
-  initDatabase,
-}
+module.exports = { db, run, get, all, initDatabase }
