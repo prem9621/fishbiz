@@ -22,7 +22,7 @@ const upload = multer({
 router.get('/', async (req, res) => {
   try {
     const products = await all(`
-      SELECT id, name, description, price, availability, image_url AS imageUrl, additional_images AS additionalImages, is_featured AS isFeatured
+      SELECT id, name, name_hindi, name_english, description, price, price_per_kg, available, availability, image_url AS imageUrl, additional_images AS additionalImages, is_featured AS isFeatured
       FROM fish_products
       ORDER BY is_featured DESC, id DESC
     `)
@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const fish = await get(
-      `SELECT id, name, description, price, availability, image_url AS imageUrl, additional_images AS additionalImages, is_featured AS isFeatured FROM fish_products WHERE id = ?`,
+      `SELECT id, name, name_hindi, name_english, description, price, price_per_kg, available, availability, image_url AS imageUrl, additional_images AS additionalImages, is_featured AS isFeatured FROM fish_products WHERE id = ?`,
       [req.params.id],
     )
     if (!fish) return res.status(404).json({ message: 'Fish not found' })

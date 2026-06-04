@@ -48,8 +48,12 @@ async function initDatabase() {
     CREATE TABLE IF NOT EXISTS fish_products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      name_hindi TEXT,
+      name_english TEXT,
       description TEXT NOT NULL,
       price TEXT,
+      price_per_kg REAL,
+      available INTEGER DEFAULT 1,
       availability TEXT NOT NULL DEFAULT 'In Stock',
       image_url TEXT,
       additional_images TEXT,
@@ -59,6 +63,10 @@ async function initDatabase() {
     )
   `)
 
+  try { db.exec('ALTER TABLE fish_products ADD COLUMN name_hindi TEXT') } catch (e) {}
+  try { db.exec('ALTER TABLE fish_products ADD COLUMN name_english TEXT') } catch (e) {}
+  try { db.exec('ALTER TABLE fish_products ADD COLUMN price_per_kg REAL') } catch (e) {}
+  try { db.exec('ALTER TABLE fish_products ADD COLUMN available INTEGER DEFAULT 1') } catch (e) {}
   try { db.exec('ALTER TABLE fish_products ADD COLUMN additional_images TEXT') } catch (e) {}
   try { db.exec('ALTER TABLE fish_products ADD COLUMN is_featured INTEGER DEFAULT 0') } catch (e) {}
 
@@ -88,6 +96,45 @@ async function initDatabase() {
       image_url TEXT NOT NULL,
       category TEXT,
       description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS fish_stock (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name_en TEXT NOT NULL,
+      name_hi TEXT NOT NULL,
+      name_mr TEXT NOT NULL,
+      price_per_kg REAL NOT NULL,
+      available INTEGER DEFAULT 1,
+      emoji TEXT,
+      image_url TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_name TEXT,
+      phone TEXT,
+      fish_requested TEXT,
+      quantity_kg REAL,
+      delivery_address TEXT,
+      preferred_time TEXT,
+      message TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS contact_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      phone TEXT,
+      email TEXT,
+      message TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `)
