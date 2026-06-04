@@ -11,6 +11,11 @@ const { fishData } = require('./data/fishData')
 
 dotenv.config()
 
+process.env.ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'sameergodawari189@gmail.com'
+process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sameer@123'
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'godawarifish_secret_2024'
+process.env.PORT = process.env.PORT || '5000'
+
 const app = express()
 const PORT = process.env.PORT || 5000
 
